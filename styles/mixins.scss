@@ -1,0 +1,13 @@
+@mixin scrollbar {
+  overflow-y: scroll;
+  &::-webkit-scrollbar {
+    background-color: transparent;
+
+    width:5px;
+  }
+  &::-webkit-scrollbar-thumb {
+    border: 1px solid $borders;
+    background: $accent;
+    border-radius: 10px;
+  }
+}
