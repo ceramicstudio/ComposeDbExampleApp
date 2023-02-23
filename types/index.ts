@@ -7,6 +7,15 @@ export type Profile = {
   emoji?: string
 }
 
+export type Posts = {
+  edges: Array<{
+    node: {
+      body: string
+      id: string
+    }
+  }>
+}
+
 export type PostProps = { 
   author: Author
   post: Post
@@ -18,7 +27,7 @@ export type SidebarProps = {
   id?: string
 }
 
-type Author = {
+export type Author = {
   id: string
   name: string
   username: string

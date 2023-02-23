@@ -1,16 +1,68 @@
+import Post from '../components/post.component'
+import styles from "../styles/Home.module.scss"
+
 import type { NextPage } from 'next'
 
-import { Userform } from '../components/userform.component'
+import { useEffect, useState } from 'react'
+import { useCeramicContext } from '../context'
+import { PostProps } from '../types'
 
 const ExplorePage: NextPage = () => {
-    return (
-        <div className = "content">
-            <div>
-                <h1>This is the explore page</h1>
-                <Userform />
-            </div>
-        </div>
-    )
+  const clients = useCeramicContext()
+  const {ceramic, composeClient} = clients
+
+  const [posts, setPosts ] = useState<PostProps[] | []>([])
+
+  const explorePosts = async () => {
+    const res = await composeClient.executeQuery(`
+      query {
+        postsIndex (last:300) {
+          edges {
+            node {
+              id
+              body
+              created
+              profile {
+                id
+                name
+                username 
+              }
+            }
+          }
+        }
+      }
+    `)
+    const posts: PostProps[] = []
+    res.data.postsIndex.edges.map(post => {
+      posts.push({
+        author: {
+          id: post.node.profile.id,
+          name: post.node.profile.name,
+          username: post.node.profile.username
+        },
+        post: {
+          body: post.node.body,
+          created: post.node.created,
+          id: post.node.id
+        }
+      })
+    })
+    setPosts(posts)
+  }
+
+  useEffect(() => {
+    explorePosts()
+  }, [])
+
+  return (
+    <div className = "content">
+      <div className={styles.postContainer}>
+        {posts?.map(post => (
+          <Post author = {post.author} post = {post.post} key = {post.post.id} />
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export default ExplorePage

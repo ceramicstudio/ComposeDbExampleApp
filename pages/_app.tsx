@@ -35,6 +35,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
       const profile = await composeClient.executeQuery(`
         query {
           viewer {
+            id
             basicProfile {
               id
               name
@@ -43,6 +44,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
           }
         }
       `);
+      localStorage.setItem("viewer", profile?.data?.viewer?.id)
       
       setProfile(profile?.data?.viewer?.basicProfile)
     }
@@ -54,6 +56,9 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
       getProfile()
     }
   }, [ ])
+  useEffect(() => {
+
+  }, [profile])
   return (
     <div className="container">
       <CeramicWrapper>
@@ -62,9 +67,6 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
           <Component {...pageProps} ceramic />
           <Footer />
         </div>
-        {/* <div className="ctas">
-          <a href = "#">demo</a>
-        </div> */}
       </CeramicWrapper>
     </div>
   );

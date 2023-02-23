@@ -48,10 +48,10 @@ const Home: NextPage = () => {
     }
   }
   const getPosts = async () => {
-    if(ceramic.did !== undefined){
-      const posts = await composeClient.executeQuery(`
-        query {
-          viewer {
+    const res = await composeClient.executeQuery(`
+      query {
+        node(id: "${localStorage.getItem('viewer')}") {
+          ...on CeramicAccount {
             followingList(last:300) {
               edges {
                 node {
@@ -74,46 +74,29 @@ const Home: NextPage = () => {
             }
           }
         }
-      `)
-      const followedPosts = await destructurePosts(posts)
+      }
+    `)
 
-      setPosts((followedPosts || [])) // reverse to get most recent msgs
-    }
-  }
-  //TODO: Tighting up types
-  const destructurePosts = async (viewerObj:any) => {
-    if(viewerObj?.data?.viewer?.followingList.edges === undefined) {
-      return
-    }
-    const following = viewerObj.data.viewer.followingList.edges
-    console.log('following', viewerObj.data.viewer.followingList)
-    
+    // TODO: Sort based off of "created date"
     const posts:PostProps[] = []
 
-    // TODO: Any => something more useful.
-    following.map((post: any) => {
-      console.log("post", post)
-      if(post.node.profile !== null && post.node.profile?.posts !== undefined) {
-        post.node.profile.posts.edges.forEach((profilePosts: any) => {
-          posts.push(
-            {
-              author: {
-                id: post.node.profile.id,
-                name: post.node.profile.name,
-                username: post.node.profile.username
-              },
-              post: {
-                body: profilePosts.node.body,
-                created: profilePosts.node.created,
-                id: profilePosts.node.id
-              }
-            }
-          )
-          console.log("profilePosts", profilePosts)
+    res.data.node?.followingList.edges.map(profile => {
+      profile.node.profile.posts.edges.map(post => {
+        posts.push({
+          author: {
+            id: profile.node.profile.id,
+            name: profile.node.profile.name,
+            username: profile.node.profile.username,
+          },
+          post: {
+            id: post.node.id,
+            body: post.node.body,
+            created: post.node.created
+          }
         })
-      }
+      })
     })
-    return posts
+    setPosts((posts?.reverse())) // reverse to get most recent msgs
   }
 
   useEffect(() => {
@@ -143,7 +126,7 @@ const Home: NextPage = () => {
         </div>
         <div className = {styles.postContainer}>
             {(posts).map(post => (
-              <Post author = {post.author} post = {post.post} />
+              <Post author = {post.author} post = {post.post} key = {post.post.id} />
             ))}
         </div>
       </div>

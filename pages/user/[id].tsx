@@ -1,10 +1,12 @@
 import type { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+
 import { useCeramicContext } from '../../context'
+import { Author, Posts } from '../../types'
 
 import Head from 'next/head'
-import Link from 'next/link'
+import Post from '../../components/post.component'
 import styles from "../../styles/Home.module.scss"
 
 const UserProfile: NextPage = () => {
@@ -13,19 +15,23 @@ const UserProfile: NextPage = () => {
 
   const clients = useCeramicContext()
   const { ceramic, composeClient } = clients
-  const [ profile, setProfile ] = useState({})
-  const [ posts, setPosts ] = useState([])
+  const [ profile, setProfile ] = useState<Author | {}>({})
+  const [ posts, setPosts ] = useState<Posts[] | []>([])
 
-  const getUser = async () => {
-    const test = await composeClient.executeQuery(`
+  const getData = async () => {
+    const data = await composeClient.executeQuery(`
       query {
-        viewer {
-          followingList(last:300) {
-            edges {
-              node {
-                id
-                profile {
-                  name
+        node (id: "${id}") {
+          ... on BasicProfile {
+            id
+            username
+            name
+            posts (last:300) {
+              edges {
+                node {
+                  id
+                  body
+                  created
                 }
               }
             }
@@ -33,22 +39,12 @@ const UserProfile: NextPage = () => {
         }
       }
     `)
-    console.log ('test', test)
-    const profile = await composeClient.executeQuery(`
-      query {
-        node(id: "${id}") {
-          ...on CeramicAccount {
-            basicProfile{
-              username
-              name
-              id
-            }
-          }
-        }
-      }
-    `)
-    console.log("profile", profile)
-    setProfile(profile)
+    setProfile({
+      name: data.data.node.name,
+      username: data.data.node.username,
+      id: data.data.node.id
+    })
+    setPosts(data.data.node.posts)
   }
 
   // TODO: Add check to see if viewer is already following this account to
@@ -58,7 +54,7 @@ const UserProfile: NextPage = () => {
       mutation {
         createFollowing(input: {
           content: {
-            profileId: "${profile.data.node.basicProfile.id}"
+            profileId: "${profile.id}"
           }
         }) 
         {
@@ -70,59 +66,38 @@ const UserProfile: NextPage = () => {
     `)
     console.log(follow)
   }
-  const getPosts = async () => {
-    const posts = await composeClient.executeQuery(`
-      query {
-        node(id:"${id}") {
-          ...on CeramicAccount {
-            postsList(last:30) {
-              edges{
-                node {
-                  id
-                  body
-                }
-              }
-            }
-          }
-        }
-      }
-    `)
-    setPosts(posts.data.node.postsList.edges)
-  }
 
   useEffect(() => {
-    getPosts()
-    getUser()
+    getData()
   }, [])
+
   return (
     <>
       <Head>
-        <title>{profile !== undefined ? `${profile?.data?.node?.basicProfile.username}'s Profile`: 'No profile'}</title>
+        <title>{profile !== undefined ? `${profile?.username}'s Profile`: 'No profile'}</title>
       </Head>
-      {profile?.data?.node?.basicProfile.username === undefined ? 
-        <div className = "content">
-          <Link href = "/">
-            <a>
-              <button>Profile Not found</button>
-            </a>
-          </Link>
-        </div>
-      : 
-        <div className = "content">
-          <div>this is the profile page for {profile.data.node.basicProfile.username}</div>
-          <button onClick={() => {
-            follow()
-          }}>Follow</button>
-          <div className = {styles.postContainer}>
-            {(posts).map(post => (
-              <div 
-                className = {styles.post} 
-                key = {post.node.id}>
-                  {post.node.body}
+      { profile !== undefined 
+        ?
+          <div className = "content">
+            <button onClick = {() => {follow()}}>Follow {`${profile.username}`}</button>
+            {
+              posts?.edges !== undefined 
+              ? 
+                <div className = {styles.postContainer}>
+                  {posts.edges.map(post => (
+                    <Post
+                      author = {profile}
+                      post = {post.node}
+                      key = {post.node.id}
+                    />
+                  ))}
                 </div>
-            ))}
+              : 
+              <></>
+            }
           </div>
-        </div>
+        :
+          <div className = "content"></div>
       }
     </>
   )
