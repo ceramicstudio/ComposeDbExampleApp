@@ -8,6 +8,7 @@ import { Author, Posts } from '../../types'
 import Head from 'next/head'
 import Post from '../../components/post.component'
 import styles from "../../styles/Home.module.scss"
+import userStyles from "../../styles/user.module.scss"
 
 const UserProfile: NextPage = () => {
   const router = useRouter()
@@ -26,6 +27,7 @@ const UserProfile: NextPage = () => {
             id
             username
             name
+            emoji
             posts (last:300) {
               edges {
                 node {
@@ -42,7 +44,8 @@ const UserProfile: NextPage = () => {
     setProfile({
       name: data.data.node.name,
       username: data.data.node.username,
-      id: data.data.node.id
+      id: data.data.node.id,
+      emoji: data.data.node.emoji
     })
     setPosts(data.data.node.posts)
   }
@@ -79,7 +82,24 @@ const UserProfile: NextPage = () => {
       { profile !== undefined 
         ?
           <div className = "content">
-            <button onClick = {() => {follow()}}>Follow {`${profile.username}`}</button>
+            <div className={userStyles.details}>
+              <div className = {userStyles.user}>
+                <div className = {userStyles.emoji}>
+                  {profile.emoji}
+                </div>
+                <div className = {userStyles.names}>
+                  <div>
+                    {profile.name}
+                  </div>
+                  <div>
+                    @{profile.username}
+                  </div>
+                </div>
+              </div>
+                <div className = {userStyles.follow}>
+                  <button onClick = {() => {follow()}}>Follow {`${profile.username}`}</button>  
+                </div>
+            </div>
             {
               posts?.edges !== undefined 
               ? 

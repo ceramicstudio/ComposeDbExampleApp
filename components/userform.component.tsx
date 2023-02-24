@@ -2,7 +2,10 @@
 import { useState, useEffect } from 'react'
 import { authenticateCeramic } from '../utils'
 import { useCeramicContext } from '../context'
-import {Profile} from "../types"
+
+import { Profile } from "../types"
+
+import styles from "../styles/profile.module.scss"
 
 export const Userform = () => {
   const clients = useCeramicContext()
@@ -18,7 +21,7 @@ export const Userform = () => {
 
   const getProfile = async () => {
     setLoading(true)
-    if(ceramic.did !== undefined) {
+    if (ceramic.did !== undefined) {
       const profile = await composeClient.executeQuery(`
         query {
           viewer {
@@ -34,12 +37,12 @@ export const Userform = () => {
         }
       `);
       console.log(profile)
-      
+
       setProfile(profile?.data?.viewer?.basicProfile)
       setLoading(false);
     }
   }
-  
+
   const updateProfile = async () => {
     setLoading(true);
     if (ceramic.did !== undefined) {
@@ -77,7 +80,7 @@ export const Userform = () => {
   return (
     <>
       {profile === undefined && ceramic.did === undefined ? (
-        <div className = "content">
+        <div className="content">
           <button
             onClick={() => {
               handleLogin();
@@ -87,66 +90,68 @@ export const Userform = () => {
           </button>
         </div>
       ) : (
-        <div className = "content">
-          <div className="">
-            <label className="">Name</label>
-            <input
-              className=""
-              type="text"
-              defaultValue={profile?.name || ''}
-              onChange={(e) => {
-                setProfile({ ...profile, name: e.target.value });
-              }}
-            />
-          </div>
-          <div className="">
-            <label>Username</label>
-            <input
-              type="text"
-              defaultValue={profile?.username || ''}
-              onChange={(e) => {
-                setProfile({ ...profile, username: e.target.value });
-              }}
-            />
-          </div>
-          <div className="">
-            <label>Description</label>
-            <input
-              type="text"
-              defaultValue={profile?.description || ''}
-              onChange={(e) => {
-                setProfile({ ...profile, description: e.target.value });
-              }}
-            />
-          </div>
-          <div className="">
-            <label>Gender</label>
-            <input
-              type="text"
-              defaultValue={profile?.gender || ''}
-              onChange={(e) => {
-                setProfile({ ...profile, gender: e.target.value });
-              }}
-            />
-          </div>
-          <div className="">
-            <label>Emoji</label>
-            <input
-              type="text"
-              defaultValue={profile?.emoji || ''}
-              onChange={(e) => {
-                setProfile({ ...profile, emoji: e.target.value });
-              }}
-              maxLength={2}
-            />
-          </div>
-          <div className="">
-            <button
-            onClick={() => {
-              updateProfile();
-            }}>
-              {loading ? 'Loading...' : 'Update Profile'}
-            </button>
+        <div className="content">
+          <div className={styles.formGroup}>
+            <div className="">
+              <label className="">Name</label>
+              <input
+                className=""
+                type="text"
+                defaultValue={profile?.name || ''}
+                onChange={(e) => {
+                  setProfile({ ...profile, name: e.target.value });
+                }}
+              />
+            </div>
+            <div className="">
+              <label>Username</label>
+              <input
+                type="text"
+                defaultValue={profile?.username || ''}
+                onChange={(e) => {
+                  setProfile({ ...profile, username: e.target.value });
+                }}
+              />
+            </div>
+            <div className="">
+              <label>Description</label>
+              <input
+                type="text"
+                defaultValue={profile?.description || ''}
+                onChange={(e) => {
+                  setProfile({ ...profile, description: e.target.value });
+                }}
+              />
+            </div>
+            <div className="">
+              <label>Gender</label>
+              <input
+                type="text"
+                defaultValue={profile?.gender || ''}
+                onChange={(e) => {
+                  setProfile({ ...profile, gender: e.target.value });
+                }}
+              />
+            </div>
+            <div className="">
+              <label>Emoji</label>
+              <input
+                type="text"
+                defaultValue={profile?.emoji || ''}
+                onChange={(e) => {
+                  setProfile({ ...profile, emoji: e.target.value });
+                }}
+                maxLength={2}
+              />
+            </div>
+            <div className="">
+              <button
+                onClick={() => {
+                  updateProfile();
+                }}>
+                {loading ? 'Loading...' : 'Update Profile'}
+              </button>
+            </div>
           </div>
         </div>
       )}

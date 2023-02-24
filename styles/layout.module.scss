@@ -2,6 +2,9 @@
 
 .container {
   width: 70%;
+  @media screen and (max-width: 540px) {
+    width: 100%
+  }
   margin: 0 auto;
 
   /* Flex positioning */
@@ -16,6 +19,17 @@
     position: sticky;
 
     max-width: 250px;
+  }
+  @media screen and (max-width: 540px) {
+    .sidebar {
+      max-width: 120px!important;
+      .logoContainer{
+        width:100px!important;
+      }
+      a {
+        font-size: 18px!important;
+      }
+    }
   }
   .sidebar {
     display: flex;
@@ -68,8 +82,6 @@
     align-items: center;
     justify-content: center;
   }
-  .ctas {
-  }
   .footer {
     background-color: $bgColor;
 
@@ -93,6 +105,10 @@
       top: 0;
       left: calc((100% - 240px) / 2);
       width: 240px;
+      @media screen and (max-width: 540px) {
+        width: 100px;
+        left:calc((100% - 100px) / 2);
+      }
       text-align: center;
       height: 2px;
       background-color: #eb4a27;
