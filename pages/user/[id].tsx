@@ -41,6 +41,7 @@ const UserProfile: NextPage = () => {
         }
       }
     `)
+    console.log(data)
     setProfile({
       name: data.data.node.name,
       username: data.data.node.username,

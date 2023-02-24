@@ -1,7 +1,0 @@
-type Comments @loadModel(id: "kjzl6hvfrbw6ca56peq5lf4c3qs2ukbrbeksmaetwx7v9ua0aq95g2xx7ao4wly") {
-  id: ID!
-}
-
-type Posts @loadModel(id: "kjzl6hvfrbw6c5l6o8bvuhysorkepm371495kb9g0rz0t1fmylhhe5qbz609b9z") {
-  comments: [Comments] @relationFrom(model: "Comments", property: "postId")
-}
