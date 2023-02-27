@@ -11,7 +11,7 @@
   "node": {},
   "state-store": { "mode": "fs", "local-directory": "~/.ceramic/statestore/" },
   "indexing": {
-    "db": "sqlite:///home/dryad/.ceramic/indexing.sqlite",
+    "db": "sqlite:///[HOME]/.ceramic/indexing.sqlite",
     "allow-queries-before-historical-sync": true,
     "models": []
   }
