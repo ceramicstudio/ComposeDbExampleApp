@@ -47,6 +47,7 @@ const ExplorePage: NextPage = () => {
         }
       })
     })
+    posts.sort((a,b)=> (new Date(b.created) - new Date(a.created)))
     setPosts(posts)
   }
 

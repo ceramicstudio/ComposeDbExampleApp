@@ -54,11 +54,11 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
     if(localStorage.getItem('did')) {
       handleLogin()
       getProfile()
+    } else {
+      handleLogin()
     }
   }, [ ])
-  useEffect(() => {
 
-  }, [profile])
   return (
     <div className="container">
       <CeramicWrapper>

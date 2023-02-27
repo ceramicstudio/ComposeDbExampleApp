@@ -48,7 +48,7 @@ const Home: NextPage = () => {
     }
   }
   const getPosts = async () => {
-    const res = await composeClient.executeQuery(`
+    const following = await composeClient.executeQuery(`
       query {
         node(id: "${localStorage.getItem('viewer')}") {
           ...on CeramicAccount {
@@ -76,26 +76,64 @@ const Home: NextPage = () => {
         }
       }
     `)
+    const explore = await composeClient.executeQuery(`
+      query {
+        postsIndex(last:300) {
+          edges {
+            node {
+              id
+              body
+              created
+              profile{
+                id
+                name
+                username
+              }
+            }
+          }
+        }
+      }
+    `)
 
     // TODO: Sort based off of "created date"
     const posts:PostProps[] = []
-
-    res.data.node?.followingList.edges.map(profile => {
-      profile.node.profile.posts.edges.map(post => {
+    
+    if(following.data !== undefined) {
+      following.data?.node?.followingList.edges.map(profile => {
+        profile.node.profile.posts.edges.map(post => {
+          posts.push({
+            author: {
+              id: profile.node.profile.id,
+              name: profile.node.profile.name,
+              username: profile.node.profile.username,
+            },
+            post: {
+              id: post.node.id,
+              body: post.node.body,
+              created: post.node.created
+            }
+          })
+        })
+      })
+    } else {
+      explore.data?.postsIndex?.edges.map(post => {
         posts.push({
           author: {
-            id: profile.node.profile.id,
-            name: profile.node.profile.name,
-            username: profile.node.profile.username,
-          },
+            id: post.node.profile.id,
+            name: post.node.profile.name,
+            username: post.node.profile.username
+          }, 
           post: {
             id: post.node.id,
             body: post.node.body,
             created: post.node.created
           }
         })
-      })
-    })
+      }) 
+    }
+    posts.sort((a,b)=> (new Date(b.created) - new Date(a.created)))
+
+
     setPosts((posts?.reverse())) // reverse to get most recent msgs
   }
 
@@ -114,6 +152,7 @@ const Home: NextPage = () => {
         <div className = {styles.share}>
           <textarea 
             value={newPost}
+            maxLength={100}
             placeholder="What are you thinking about?"
             className = {styles.postInput}
             onChange={(e) => {

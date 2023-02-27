@@ -40,6 +40,8 @@ const encodeComposites = async (files) => {
         composite, 
         `./src/__generated__/${file.split('.graphql')[0]}.json`
       )
+      // const deployedComposite = await readEncodedComposite(ceramic, `./src/__generated__/${file.split('.graphql')[0]}.json`)
+      // deployedComposite.startIndexingOn(ceramic)
     } catch (err) {
       console.error(err)
     }
