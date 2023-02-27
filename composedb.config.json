@@ -1,0 +1,18 @@
+{
+  "anchor": {},
+  "http-api": {
+    "cors-allowed-origins": [".*"],
+    "admin-dids": ["did:key:z6MkfuigJH7DXP6PiYpMVLvsX1Ak2CYKmMEX488zCub9tvwP"]
+  },
+  "ipfs": { "mode": "bundled" },
+  "logger": { "log-level": 2, "log-to-files": false },
+  "metrics": { "metrics-exporter-enabled": false, "metrics-port": 9090 },
+  "network": { "name": "testnet-clay" },
+  "node": {},
+  "state-store": { "mode": "fs", "local-directory": "~/.ceramic/statestore/" },
+  "indexing": {
+    "db": "sqlite:///home/dryad/.ceramic/indexing.sqlite",
+    "allow-queries-before-historical-sync": true,
+    "models": []
+  }
+}
