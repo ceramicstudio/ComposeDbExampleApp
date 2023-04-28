@@ -23,6 +23,7 @@
     "@didtools/cacao": "2.0.0",
     "@didtools/pkh-ethereum": "0.1.0",
     "chalk": "^5.1.2",
+    "crypto-browserify": "^3.12.0",
     "did-session": "^1.0.0",
     "dids": "^3.2.0",
     "graphql": "^16.6.0",
