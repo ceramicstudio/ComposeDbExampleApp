@@ -5,10 +5,11 @@ import { Footer } from '../components/footer.component';
 import {CeramicWrapper} from "../context";
 import type { AppProps } from 'next/app'
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 
 import { useCeramicContext } from '../context';
 import { authenticateCeramic } from '../utils';
+import AuthPrompt from "./did-select-popup";
 
 type Profile = {
   id?: any
@@ -60,6 +61,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   }, [ ])
 
   return (
+      <div> <AuthPrompt/>
     <div className="container">
       <CeramicWrapper>
         <Sidebar name = {profile?.name} username = {profile?.username} id={profile?.id}/>
@@ -69,6 +71,8 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
         </div>
       </CeramicWrapper>
     </div>
+      </div>
+
   );
 }
 

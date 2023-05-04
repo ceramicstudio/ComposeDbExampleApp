@@ -8,7 +8,8 @@ import Head from 'next/head'
 
 import Post from "../components/post.component"
 import styles from "../styles/Home.module.scss"
-
+import AuthPrompt from "./did-select-popup";
+import React from "react";
 
 const Home: NextPage = () => {  
   const clients = useCeramicContext()
@@ -17,17 +18,19 @@ const Home: NextPage = () => {
   const [ posts, setPosts ] = useState<PostProps[] | []>([])
 
   const createPost = async () => {
-    if(ceramic.did !== undefined) { 
+    if(ceramic.did !== undefined) {
       const profile = await composeClient.executeQuery(`
         query {
           viewer {
             basicProfile {
               id
+              name
             }
           }
         }
       `)
-      const post = await composeClient.executeQuery(`
+      if(profile && profile.data?.viewer.basicProfile?.name) {
+        const post = await composeClient.executeQuery(`
         mutation {
           createPosts(input: {
             content: {
@@ -43,11 +46,29 @@ const Home: NextPage = () => {
           }
         }
       `)
-      getPosts()
-      setNewPost('')
+        getPosts()
+        setNewPost('')
+        alert("Created post.")
+      } else {
+        alert("Failed to fetch profile for authenticated user. Please register a profile.");
+      }
     }
   }
   const getPosts = async () => {
+    const profile = await composeClient.executeQuery(`
+        query {
+          viewer {
+            id
+            basicProfile {
+              id
+              name
+              username
+            }
+          }
+        }
+      `);
+    localStorage.setItem("viewer", profile?.data?.viewer?.id)
+
     const following = await composeClient.executeQuery(`
       query {
         node(id: "${localStorage.getItem('viewer')}") {
@@ -98,42 +119,43 @@ const Home: NextPage = () => {
     // TODO: Sort based off of "created date"
     const posts:PostProps[] = []
     
-    if(following.data !== undefined) {
+    if(following.data !== undefined && profile.node !== undefined) {
       following.data?.node?.followingList.edges.map(profile => {
         profile.node.profile.posts.edges.map(post => {
-          posts.push({
-            author: {
-              id: profile.node.profile.id,
-              name: profile.node.profile.name,
-              username: profile.node.profile.username,
-            },
-            post: {
-              id: post.node.id,
-              body: post.node.body,
-              created: post.node.created
-            }
-          })
+            posts.push({
+              author: {
+                id: profile.node.profile.id,
+                name: profile.node.profile.name,
+                username: profile.node.profile.username,
+              },
+              post: {
+                id: post.node.id,
+                body: post.node.body,
+                created: post.node.created
+              }
+            })
         })
       })
     } else {
       explore.data?.postsIndex?.edges.map(post => {
-        posts.push({
-          author: {
-            id: post.node.profile.id,
-            name: post.node.profile.name,
-            username: post.node.profile.username
-          }, 
-          post: {
-            id: post.node.id,
-            body: post.node.body,
-            created: post.node.created
-          }
-        })
+        if(posts.node !== undefined){
+            posts.push({
+              author: {
+                id: post.node.profile.id,
+                name: post.node.profile.name,
+                username: post.node.profile.username
+              },
+              post: {
+                id: post.node.id,
+                body: post.node.body,
+                created: post.node.created
+              }
+            })
+            }
       }) 
     }
     posts.sort((a,b)=> (new Date(b.created) - new Date(a.created)))
-
-
+    console.log(posts)
     setPosts((posts?.reverse())) // reverse to get most recent msgs
   }
 

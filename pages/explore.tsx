@@ -10,6 +10,7 @@ import { PostProps } from '../types'
 const ExplorePage: NextPage = () => {
   const clients = useCeramicContext()
   const {ceramic, composeClient} = clients
+  let alerted = false;
 
   const [posts, setPosts ] = useState<PostProps[] | []>([])
 
@@ -33,21 +34,30 @@ const ExplorePage: NextPage = () => {
       }
     `)
     const posts: PostProps[] = []
+
     res.data.postsIndex.edges.map(post => {
-      posts.push({
-        author: {
-          id: post.node.profile.id,
-          name: post.node.profile.name,
-          username: post.node.profile.username
-        },
-        post: {
-          body: post.node.body,
-          created: post.node.created,
-          id: post.node.id
-        }
-      })
+      if(post.node){
+        posts.push({
+          author: {
+            id: post.node.profile.id,
+            name: post.node.profile.name,
+            username: post.node.profile.username
+          },
+          post: {
+            body: post.node.body,
+            created: post.node.created,
+            id: post.node.id
+          }
+        })
+      }
     })
     posts.sort((a,b)=> (new Date(b.created) - new Date(a.created)))
+    if(posts.length == 0){
+      if(!alerted){
+        alert("There's nothing here! Try posting with a registered profile or see the README to upgrade to claynet to see other developer's posts.")
+        alerted = true;
+      }
+    }
     setPosts(posts)
   }
 

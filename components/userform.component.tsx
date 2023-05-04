@@ -36,8 +36,6 @@ export const Userform = () => {
           }
         }
       `);
-      console.log(profile)
-
       setProfile(profile?.data?.viewer?.basicProfile)
       setLoading(false);
     }
@@ -68,7 +66,42 @@ export const Userform = () => {
           }
         }
       `);
-      await getProfile();
+      if(update.errors){
+        alert(update.errors);
+      } else {
+        alert("Updated profile.")
+        setLoading(true)
+        const updatedProfile = await composeClient.executeQuery(`
+        query {
+          viewer {
+            basicProfile {
+              id
+              name
+              username
+              description
+              gender
+              emoji
+            }
+          }
+        }
+      `);
+        setProfile(updatedProfile?.data?.viewer?.basicProfile)
+        const followSelf = await composeClient.executeQuery(`
+        mutation {
+          createFollowing(input: {
+            content: {
+              profileId: "${updatedProfile?.data?.viewer?.basicProfile.id}"
+            }
+          }) 
+          {
+            document {
+              profileId
+            }
+          }
+        }
+      `)
+        console.log(followSelf)
+      }
       setLoading(false);
     }
   }
@@ -137,7 +170,7 @@ export const Userform = () => {
               <label>Emoji</label>
               <input
                 type="text"
-                defaultValue={profile?.emoji || ''}
+                defaultValue={profile?.emoji || "😃"}
                 onChange={(e) => {
                   setProfile({ ...profile, emoji: e.target.value });
                 }}
