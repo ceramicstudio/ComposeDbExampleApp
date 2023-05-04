@@ -119,7 +119,7 @@ const Home: NextPage = () => {
     // TODO: Sort based off of "created date"
     const posts:PostProps[] = []
     
-    if(following.data !== undefined && profile.node !== undefined) {
+    if(following.data !== undefined) {
       following.data?.node?.followingList.edges.map(profile => {
         profile.node.profile.posts.edges.map(post => {
             posts.push({
@@ -138,20 +138,18 @@ const Home: NextPage = () => {
       })
     } else {
       explore.data?.postsIndex?.edges.map(post => {
-        if(posts.node !== undefined){
-            posts.push({
-              author: {
-                id: post.node.profile.id,
-                name: post.node.profile.name,
-                username: post.node.profile.username
-              },
-              post: {
-                id: post.node.id,
-                body: post.node.body,
-                created: post.node.created
-              }
-            })
-            }
+        posts.push({
+          author: {
+            id: post.node.profile.id,
+            name: post.node.profile.name,
+            username: post.node.profile.username
+          },
+          post: {
+            id: post.node.id,
+            body: post.node.body,
+            created: post.node.created
+          }
+        })
       }) 
     }
     posts.sort((a,b)=> (new Date(b.created) - new Date(a.created)))

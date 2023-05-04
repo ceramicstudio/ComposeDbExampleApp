@@ -104,7 +104,7 @@ const UserProfile: NextPage = () => {
                 </div>
             </div>
             {
-              posts?.edges !== undefined && posts?.node !== undefined
+              posts?.edges !== undefined
               ? 
                 <div className = {styles.postContainer}>
                   {
