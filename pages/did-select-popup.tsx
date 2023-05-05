@@ -6,9 +6,16 @@ const AuthPrompt = () => {
     const [isVisible, setIsVisible] = useState(true);
     const clients = useCeramicContext()
     const { ceramic, composeClient } = clients
+    const isLogged = () => {
+        return localStorage.getItem("logged_in") == "true"
+    };
 
     const handleOpen = () => {
-        setIsVisible(true);
+        if(localStorage.getItem("logged_in")){
+            setIsVisible(true);
+        } else {
+            setIsVisible(false);
+        }
     };
 
     const handleKeyDid = () => {
@@ -25,7 +32,8 @@ const AuthPrompt = () => {
 
     return (
         <div>
-            {isVisible && (
+            {
+                isVisible && (
                 <div className="popup">
                     <div className="popup-content">
                         <h2>Authenticate</h2>

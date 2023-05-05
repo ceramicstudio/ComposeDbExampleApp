@@ -9,7 +9,7 @@ const Post = ({author, post}: PostProps) => {
       <div>{post.body}</div>
       <Link href = {`/user/${author.id}`}>
         <a>
-          {author.name} <small>@{author.username}</small>
+            {author.emoji} {author.name} <small>@{author.username}</small>
         </a>
       </Link>
     </div>

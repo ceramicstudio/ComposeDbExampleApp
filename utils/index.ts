@@ -25,14 +25,13 @@ declare global {
  * @returns Promise<DID-Session> - The User's authenticated sesion.
  */
 export const authenticateCeramic = async (ceramic: CeramicApi, compose: ComposeClient) => {
-  let dont_prompt_auth = localStorage.getItem('dont_prompt_auth')
+  let logged_in = localStorage.getItem('logged_in')
   const popup = document.querySelector('.popup')
-  if (dont_prompt_auth === null){
+  console.log(logged_in)
+  if (logged_in == "true"){
     if (popup) {
-      popup.style.display = 'block';
+      popup.style.display = 'none';
     }
-  } else {
-      popup.style.display = 'hidden';
   }
   let auth_type = localStorage.getItem("ceramic:auth_type")
   if (auth_type == "key") {
@@ -41,6 +40,7 @@ export const authenticateCeramic = async (ceramic: CeramicApi, compose: ComposeC
   if (auth_type == "eth") {
     authenticateEthPKH(ceramic, compose)
   }
+  localStorage.setItem('logged_in', "true");
 }
 
 const authenticateKeyDID = async (ceramic: CeramicApi, compose: ComposeClient) => {
@@ -68,7 +68,6 @@ const authenticateKeyDID = async (ceramic: CeramicApi, compose: ComposeClient) =
   await did.authenticate()
   ceramic.did = did
   compose.setDID(did)
-  localStorage.setItem('dont_prompt_auth', "")
   return
 }
 
@@ -111,6 +110,5 @@ const authenticateEthPKH = async (ceramic: CeramicApi, compose: ComposeClient) =
   // Set our Ceramic DID to be our session DID.
   compose.setDID(session.did)
   ceramic.did = session.did
-  localStorage.setItem('dont_prompt_auth', "")
   return
 }

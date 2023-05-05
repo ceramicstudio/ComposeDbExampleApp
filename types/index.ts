@@ -31,6 +31,8 @@ export type Author = {
   id: string
   name: string
   username: string
+
+  emoji: string
 }
 
 type Post = {

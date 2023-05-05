@@ -108,7 +108,9 @@ const UserProfile: NextPage = () => {
               ? 
                 <div className = {styles.postContainer}>
                   {
-                    posts.edges.map(post => (
+                    posts.edges
+                        .filter(post => post.node !== null)
+                        .map(post => (
                     <Post
                       author = {profile}
                       post = {post.node}

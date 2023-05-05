@@ -10,6 +10,7 @@ import Post from "../components/post.component"
 import styles from "../styles/Home.module.scss"
 import AuthPrompt from "./did-select-popup";
 import React from "react";
+import {authenticateCeramic} from "../utils";
 
 const Home: NextPage = () => {  
   const clients = useCeramicContext()
@@ -63,6 +64,7 @@ const Home: NextPage = () => {
               id
               name
               username
+              emoji
             }
           }
         }
@@ -80,6 +82,7 @@ const Home: NextPage = () => {
                     id
                     username
                     name
+                    emoji
                     posts(last:30) {
                       edges {
                         node {
@@ -109,6 +112,7 @@ const Home: NextPage = () => {
                 id
                 name
                 username
+                emoji
               }
             }
           }
@@ -121,20 +125,25 @@ const Home: NextPage = () => {
     
     if(following.data !== undefined) {
       following.data?.node?.followingList.edges.map(profile => {
+        if(profile.node !== null){
         profile.node.profile.posts.edges.map(post => {
-            posts.push({
-              author: {
-                id: profile.node.profile.id,
-                name: profile.node.profile.name,
-                username: profile.node.profile.username,
-              },
-              post: {
-                id: post.node.id,
-                body: post.node.body,
-                created: post.node.created
-              }
-            })
+          if(post.node !== null){
+          posts.push({
+            author: {
+              id: profile.node.profile.id,
+              name: profile.node.profile.name,
+              username: profile.node.profile.username,
+              emoji: profile.node.profile.emoji
+            },
+            post: {
+              id: post.node.id,
+              body: post.node.body,
+              created: post.node.created
+            }
+          })
+        }
         })
+      }
       })
     } else {
       explore.data?.postsIndex?.edges.map(post => {
@@ -142,7 +151,8 @@ const Home: NextPage = () => {
           author: {
             id: post.node.profile.id,
             name: post.node.profile.name,
-            username: post.node.profile.username
+            username: post.node.profile.username,
+            emoji: post.node.profile.emoji
           },
           post: {
             id: post.node.id,
@@ -164,7 +174,7 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>DecentraTwitter</title>
+        <title>Ceramic Social</title>
         {/* TODO: UPDATE FAVICON */}
         <link rel="icon" href="/favicon.ico" />
       </Head>

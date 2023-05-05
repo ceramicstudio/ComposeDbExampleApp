@@ -27,6 +27,7 @@ const ExplorePage: NextPage = () => {
                 id
                 name
                 username 
+                emoji
               }
             }
           }
@@ -41,7 +42,8 @@ const ExplorePage: NextPage = () => {
           author: {
             id: post.node.profile.id,
             name: post.node.profile.name,
-            username: post.node.profile.username
+            username: post.node.profile.username,
+            emoji: post.node.profile.emoji
           },
           post: {
             body: post.node.body,

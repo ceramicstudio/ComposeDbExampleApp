@@ -170,7 +170,7 @@ export const Userform = () => {
               <label>Emoji</label>
               <input
                 type="text"
-                defaultValue={profile?.emoji || "😃"}
+                defaultValue={profile?.emoji || ''}
                 onChange={(e) => {
                   setProfile({ ...profile, emoji: e.target.value });
                 }}
