@@ -100,9 +100,7 @@ const authenticateEthPKH = async (ceramic: CeramicApi, compose: ComposeClient) =
      */
 
     // TODO: Switch to explicitly authorized resources. This sets a bad precedent.
-    session = await DIDSession.authorize(authMethod, {resources: [
-        "ceramic://*",
-      ]})
+    session = await DIDSession.authorize(authMethod, { resources: compose.resources })
     // Set the session in localStorage.
     localStorage.setItem('ceramic:eth_did', session.serialize());
   }
