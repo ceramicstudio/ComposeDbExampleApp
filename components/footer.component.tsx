@@ -11,6 +11,14 @@ export const Footer = () => {
           Ask Questions
         </a>
       </div>
+        <div>
+            <a href="/" onClick={() => {
+                localStorage.removeItem('logged_in')
+                window.location.href = "/";
+            }}>
+                Logout
+            </a>
+        </div>
     </footer>
   )
 }

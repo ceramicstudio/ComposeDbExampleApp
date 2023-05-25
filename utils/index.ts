@@ -1,12 +1,22 @@
-import { DIDSession } from "did-session";
-import { EthereumWebAuth, getAccountId } from "@didtools/pkh-ethereum";
 import type { CeramicApi } from "@ceramicnetwork/common"
 import type { ComposeClient } from "@composedb/client";
+import {Ed25519Provider} from "key-did-provider-ed25519";
+import { getResolver } from 'key-did-resolver'
+import {DID} from "dids";
+import {DIDSession} from "did-session";
+import {EthereumWebAuth, getAccountId} from "@didtools/pkh-ethereum";
+import {SolanaWebAuth, getAccountIdByNetwork } from '@didtools/pkh-solana'
+import {StreamID} from "@ceramicnetwork/streamid";
+import {ModelInstanceDocument} from "@composedb/types";
+import {makeCeramicDaemon} from "@ceramicnetwork/cli/lib/__tests__/make-ceramic-daemon";
 
-// If you are relying on an injected provider this must be here otherwise you will have a type error. 
+const DID_SEED_KEY = 'ceramic:did_seed'
+
+// If you are relying on an injected provider this must be here otherwise you will have a type error.
 declare global {
   interface Window {
     ethereum: any;
+    solflare: any;
   }
 }
 
@@ -15,7 +25,54 @@ declare global {
  * @returns Promise<DID-Session> - The User's authenticated sesion.
  */
 export const authenticateCeramic = async (ceramic: CeramicApi, compose: ComposeClient) => {
-  const sessionStr = localStorage.getItem('did') // for production you will want a better place than localStorage for your sessions.
+  let logged_in = localStorage.getItem('logged_in')
+  const popup = document.querySelector('.popup')
+  console.log(logged_in)
+  if (logged_in == "true"){
+    if (popup) {
+      popup.style.display = 'none';
+    }
+  }
+  let auth_type = localStorage.getItem("ceramic:auth_type")
+  if (auth_type == "key") {
+    authenticateKeyDID(ceramic, compose)
+  }
+  if (auth_type == "eth") {
+    authenticateEthPKH(ceramic, compose)
+  }
+  localStorage.setItem('logged_in', "true");
+}
+
+const authenticateKeyDID = async (ceramic: CeramicApi, compose: ComposeClient) => {
+  let seed_array: Uint8Array
+  if (localStorage.getItem(DID_SEED_KEY) === null){ // for production you will want a better place than localStorage for your sessions.
+    console.log("Generating seed...")
+    let seed = crypto.getRandomValues(new Uint8Array(32))
+    let seed_json = JSON.stringify(seed, (key, value) => {
+      if (value instanceof Uint8Array) {
+        return Array.from(value);
+      }
+      return value;
+    });
+    localStorage.setItem(DID_SEED_KEY, seed_json)
+    seed_array = seed
+    console.log("Generated new seed: " + seed)
+  } else {
+    let seed_json_value = localStorage.getItem(DID_SEED_KEY)
+    let seed_object = JSON.parse(seed_json_value)
+    seed_array = seed_object
+    console.log("Found seed: " + seed_array)
+  }
+  const provider = new Ed25519Provider(seed_array)
+  const did = new DID({ provider, resolver: getResolver() })
+  await did.authenticate()
+  ceramic.did = did
+  compose.setDID(did)
+  return
+}
+
+const authenticateEthPKH = async (ceramic: CeramicApi, compose: ComposeClient) => {
+  const sessionStr = localStorage.getItem('ceramic:eth_did') // for production you will want a better place than localStorage for your sessions.
   let session
 
   if(sessionStr) {
@@ -37,13 +94,17 @@ export const authenticateCeramic = async (ceramic: CeramicApi, compose: ComposeC
     const authMethod = await EthereumWebAuth.getAuthMethod(ethProvider, accountId)
 
     /**
-     * Create DIDSession & provide capabilities that we want to access.
+     * Create DIDSession & provide capabilities for resources that we want to access.
      * @NOTE: Any production applications will want to provide a more complete list of capabilities.
      *        This is not done here to allow you to add more datamodels to your application.
      */
-    session = await DIDSession.authorize(authMethod, {resources: ["ceramic://*"]})
+
+    // TODO: Switch to explicitly authorized resources. This sets a bad precedent.
+    session = await DIDSession.authorize(authMethod, {resources: [
+        "ceramic://*",
+      ]})
     // Set the session in localStorage.
-    localStorage.setItem('did', session.serialize());
+    localStorage.setItem('ceramic:eth_did', session.serialize());
   }
 
   // Set our Ceramic DID to be our session DID.

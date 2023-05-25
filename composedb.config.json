@@ -7,7 +7,7 @@
   "ipfs": { "mode": "bundled" },
   "logger": { "log-level": 2, "log-to-files": false },
   "metrics": { "metrics-exporter-enabled": false, "metrics-port": 9090 },
-  "network": { "name": "testnet-clay" },
+  "network": { "name": "inmemory" },
   "node": {},
   "state-store": { "mode": "fs", "local-directory": "~/.ceramic/statestore/" },
   "indexing": {

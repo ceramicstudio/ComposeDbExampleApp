@@ -8,7 +8,9 @@ import Head from 'next/head'
 
 import Post from "../components/post.component"
 import styles from "../styles/Home.module.scss"
-
+import AuthPrompt from "./did-select-popup";
+import React from "react";
+import {authenticateCeramic} from "../utils";
 
 const Home: NextPage = () => {  
   const clients = useCeramicContext()
@@ -17,17 +19,19 @@ const Home: NextPage = () => {
   const [ posts, setPosts ] = useState<PostProps[] | []>([])
 
   const createPost = async () => {
-    if(ceramic.did !== undefined) { 
+    if(ceramic.did !== undefined) {
       const profile = await composeClient.executeQuery(`
         query {
           viewer {
             basicProfile {
               id
+              name
             }
           }
         }
       `)
-      const post = await composeClient.executeQuery(`
+      if(profile && profile.data?.viewer.basicProfile?.name) {
+        const post = await composeClient.executeQuery(`
         mutation {
           createPosts(input: {
             content: {
@@ -43,11 +47,30 @@ const Home: NextPage = () => {
           }
         }
       `)
-      getPosts()
-      setNewPost('')
+        getPosts()
+        setNewPost('')
+        alert("Created post.")
+      } else {
+        alert("Failed to fetch profile for authenticated user. Please register a profile.");
+      }
     }
   }
   const getPosts = async () => {
+    const profile = await composeClient.executeQuery(`
+        query {
+          viewer {
+            id
+            basicProfile {
+              id
+              name
+              username
+              emoji
+            }
+          }
+        }
+      `);
+    localStorage.setItem("viewer", profile?.data?.viewer?.id)
+
     const following = await composeClient.executeQuery(`
       query {
         node(id: "${localStorage.getItem('viewer')}") {
@@ -59,6 +82,7 @@ const Home: NextPage = () => {
                     id
                     username
                     name
+                    emoji
                     posts(last:30) {
                       edges {
                         node {
@@ -88,6 +112,7 @@ const Home: NextPage = () => {
                 id
                 name
                 username
+                emoji
               }
             }
           }
@@ -100,12 +125,15 @@ const Home: NextPage = () => {
     
     if(following.data !== undefined) {
       following.data?.node?.followingList.edges.map(profile => {
+        if(profile.node !== null){
         profile.node.profile.posts.edges.map(post => {
+          if(post.node !== null){
           posts.push({
             author: {
               id: profile.node.profile.id,
               name: profile.node.profile.name,
               username: profile.node.profile.username,
+              emoji: profile.node.profile.emoji
             },
             post: {
               id: post.node.id,
@@ -113,7 +141,9 @@ const Home: NextPage = () => {
               created: post.node.created
             }
           })
+        }
         })
+      }
       })
     } else {
       explore.data?.postsIndex?.edges.map(post => {
@@ -121,8 +151,9 @@ const Home: NextPage = () => {
           author: {
             id: post.node.profile.id,
             name: post.node.profile.name,
-            username: post.node.profile.username
-          }, 
+            username: post.node.profile.username,
+            emoji: post.node.profile.emoji
+          },
           post: {
             id: post.node.id,
             body: post.node.body,
@@ -132,8 +163,7 @@ const Home: NextPage = () => {
       }) 
     }
     posts.sort((a,b)=> (new Date(b.created) - new Date(a.created)))
-
-
+    console.log(posts)
     setPosts((posts?.reverse())) // reverse to get most recent msgs
   }
 
@@ -144,7 +174,7 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>DecentraTwitter</title>
+        <title>Ceramic Social</title>
         {/* TODO: UPDATE FAVICON */}
         <link rel="icon" href="/favicon.ico" />
       </Head>

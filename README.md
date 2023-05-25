@@ -17,6 +17,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Learn More
 
+Upgrade this project to claynet to see other developer's posts! Check out wheel to install ceramic / composeDB locally:
+
+https://github.com/ceramicstudio/wheel
+
 To learn more about Ceramic please visit the following links
 
 - [Ceramic Documentation](https://developers.ceramic.network/learn/welcome/) - Learn more about the Ceramic Ecosystem.

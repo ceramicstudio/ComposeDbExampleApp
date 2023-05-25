@@ -48,6 +48,7 @@ const UserProfile: NextPage = () => {
       id: data.data.node.id,
       emoji: data.data.node.emoji
     })
+
     setPosts(data.data.node.posts)
   }
 
@@ -69,6 +70,7 @@ const UserProfile: NextPage = () => {
       }
     `)
     console.log(follow)
+    alert(`Followed ${profile.name}.`)
   }
 
   useEffect(() => {
@@ -98,14 +100,17 @@ const UserProfile: NextPage = () => {
                 </div>
               </div>
                 <div className = {userStyles.follow}>
-                  <button onClick = {() => {follow()}}>Follow {`${profile.username}`}</button>  
+                  <button onClick = {() => {follow()}}>Follow {`${profile.username}`}</button>
                 </div>
             </div>
             {
-              posts?.edges !== undefined 
+              posts?.edges !== undefined
               ? 
                 <div className = {styles.postContainer}>
-                  {posts.edges.map(post => (
+                  {
+                    posts.edges
+                        .filter(post => post.node !== null)
+                        .map(post => (
                     <Post
                       author = {profile}
                       post = {post.node}

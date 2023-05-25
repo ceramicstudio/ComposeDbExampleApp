@@ -5,10 +5,11 @@ import { Footer } from '../components/footer.component';
 import {CeramicWrapper} from "../context";
 import type { AppProps } from 'next/app'
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 
 import { useCeramicContext } from '../context';
 import { authenticateCeramic } from '../utils';
+import AuthPrompt from "./did-select-popup";
 
 type Profile = {
   id?: any
@@ -26,7 +27,7 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   const [profile, setProfile] = useState<Profile | undefined>()
 
   const handleLogin = async () => {
-    await authenticateCeramic(ceramic,composeClient)
+    await authenticateCeramic(ceramic, composeClient)
     await getProfile()
   }
 
@@ -51,15 +52,14 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
   }
   // Update to include refresh on auth
   useEffect(() => {
-    if(localStorage.getItem('did')) {
+    if(localStorage.getItem('logged_in')) {
       handleLogin()
       getProfile()
-    } else {
-      handleLogin()
     }
   }, [ ])
 
   return (
+      <div> <AuthPrompt/>
     <div className="container">
       <CeramicWrapper>
         <Sidebar name = {profile?.name} username = {profile?.username} id={profile?.id}/>
@@ -69,6 +69,8 @@ const MyApp = ({ Component, pageProps }: AppProps) => {
         </div>
       </CeramicWrapper>
     </div>
+      </div>
+
   );
 }
 
