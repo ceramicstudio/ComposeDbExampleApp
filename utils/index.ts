@@ -95,11 +95,10 @@ const authenticateEthPKH = async (ceramic: CeramicApi, compose: ComposeClient) =
 
     /**
      * Create DIDSession & provide capabilities for resources that we want to access.
-     * @NOTE: Any production applications will want to provide a more complete list of capabilities.
-     *        This is not done here to allow you to add more datamodels to your application.
+     * @NOTE: The specific resources (ComposeDB data models) are provided through
+     * "compose.resources" below.
      */
 
-    // TODO: Switch to explicitly authorized resources. This sets a bad precedent.
     session = await DIDSession.authorize(authMethod, { resources: compose.resources })
     // Set the session in localStorage.
     localStorage.setItem('ceramic:eth_did', session.serialize());
