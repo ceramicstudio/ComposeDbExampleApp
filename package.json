@@ -12,7 +12,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.278.0",
+    "@aws-sdk/client-s3": "^3.350.0",
     "@ceramicnetwork/blockchain-utils-linking": "2.11.0",
     "@ceramicnetwork/cli": "2.29.0",
     "@ceramicnetwork/common": "2.24.0",
