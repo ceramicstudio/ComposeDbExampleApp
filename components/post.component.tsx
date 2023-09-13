@@ -8,7 +8,7 @@ const Post = ({author, post}: PostProps) => {
   return (
     <div className = {styles.post} key = {post.id}>
       <div>{post.body}</div>
-      <div><small>Category: {post.tag}</small></div>
+      {post.tag && <div><small>Category: {post.tag}</small></div>}
       <Link href = {`/user/${author.id}`}>
         <a>
         <small><small>{author.emoji} {author.name} @{author.username}</small></small>
