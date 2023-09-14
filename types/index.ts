@@ -38,6 +38,6 @@ export type Author = {
 type Post = {
   body: string
   id: string
-
+  tag: string
   created?: string
 }

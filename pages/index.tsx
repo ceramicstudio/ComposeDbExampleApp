@@ -16,6 +16,7 @@ const Home: NextPage = () => {
   const clients = useCeramicContext()
   const { ceramic, composeClient } = clients
   const [ newPost, setNewPost ] = useState('')
+  const [ tag, setTag ] = useState('')
   const [ posts, setPosts ] = useState<PostProps[] | []>([])
 
   const createPost = async () => {
@@ -36,6 +37,7 @@ const Home: NextPage = () => {
           createPosts(input: {
             content: {
               body: """${newPost}"""
+              tag: """${tag}"""
               created: "${new Date().toISOString()}"
               profileId: "${profile.data.viewer.basicProfile.id}"
             }
@@ -49,6 +51,7 @@ const Home: NextPage = () => {
       `)
         getPosts()
         setNewPost('')
+        setTag('')
         alert("Created post.")
       } else {
         alert("Failed to fetch profile for authenticated user. Please register a profile.");
@@ -70,10 +73,9 @@ const Home: NextPage = () => {
         }
       `);
     localStorage.setItem("viewer", profile?.data?.viewer?.id)
-
     const following = await composeClient.executeQuery(`
       query {
-        node(id: "${localStorage.getItem('viewer')}") {
+        node(id: "${profile?.data?.viewer?.id}") {
           ...on CeramicAccount {
             followingList(last:300) {
               edges {
@@ -89,6 +91,7 @@ const Home: NextPage = () => {
                           id
                           body
                           created
+                          tag
                         }
                       }
                     }
@@ -100,6 +103,7 @@ const Home: NextPage = () => {
         }
       }
     `)
+    console.log(following)
     const explore = await composeClient.executeQuery(`
       query {
         postsIndex(last:300) {
@@ -107,6 +111,7 @@ const Home: NextPage = () => {
             node {
               id
               body
+              tag
               created
               profile{
                 id
@@ -119,11 +124,11 @@ const Home: NextPage = () => {
         }
       }
     `)
-
     // TODO: Sort based off of "created date"
     const posts:PostProps[] = []
     
-    if(following.data !== undefined) {
+    if(following.data.node !== null) {
+      console.log(following)
       following.data?.node?.followingList.edges.map(profile => {
         if(profile.node !== null){
         profile.node.profile.posts.edges.map(post => {
@@ -138,6 +143,7 @@ const Home: NextPage = () => {
             post: {
               id: post.node.id,
               body: post.node.body,
+              tag: post.node.tag,
               created: post.node.created
             }
           })
@@ -145,6 +151,7 @@ const Home: NextPage = () => {
         })
       }
       })
+      console.log(explore)
     } else {
       explore.data?.postsIndex?.edges.map(post => {
         posts.push({
@@ -157,6 +164,7 @@ const Home: NextPage = () => {
           post: {
             id: post.node.id,
             body: post.node.body,
+            tag: post.node.tag,
             created: post.node.created
           }
         })
@@ -189,13 +197,22 @@ const Home: NextPage = () => {
               setNewPost(e.target.value)
             }}
           />
+          <textarea 
+            value={tag}
+            maxLength={100}
+            placeholder="Enter a Category Tag"
+            className = {styles.postInput}
+            onChange={(e) => {
+              setTag(e.target.value)
+            }}
+          />
           <button onClick = {() => {createPost()}}>
             Share
           </button>
         </div>
         <div className = {styles.postContainer}>
             {(posts).map(post => (
-              <Post author = {post.author} post = {post.post} key = {post.post.id} />
+              <Post author = {post.author} post = {post.post} key = {post.post.id} tag = {post.post.tag}/>
             ))}
         </div>
       </div>

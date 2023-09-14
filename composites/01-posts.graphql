@@ -1,0 +1,16 @@
+type BasicProfile @loadModel(id: "$PROFILE_ID") {
+    id: ID!
+}
+
+type Posts
+    @createModel(accountRelation: LIST, description: "A simple Post")
+    @createIndex(fields: [{ path: "created" }])
+    @createIndex(fields: [{ path: "edited" }])
+    @createIndex(fields: [{ path: "tag" }]) {
+    body: String! @string(minLength: 1, maxLength: 100)
+    tag: String! @string(minLength: 1, maxLength: 100)
+    edited: DateTime
+    created: DateTime!
+    profileId: StreamID! @documentReference(model: "BasicProfile")
+    profile: BasicProfile! @relationDocument(property: "profileId")
+}
