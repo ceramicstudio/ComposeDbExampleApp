@@ -7,18 +7,18 @@ import { writeComposite } from './composites.mjs';
 const events = new EventEmitter()
 const spinner = ora();
 
-const ceramic = spawn("npm", ["run", "ceramic"]);
-ceramic.stdout.on("data", (buffer) => {
-  console.log('[Ceramic]', buffer.toString())
-  if (buffer.toString().includes("0.0.0.0:7007")) {
-    events.emit("ceramic", true);
-    spinner.succeed("ceramic node started");
-  }
-})
+// const ceramic = spawn("npm", ["run", "ceramic"]);
+// ceramic.stdout.on("data", (buffer) => {
+//   console.log('[Ceramic]', buffer.toString())
+//   if (buffer.toString().includes("0.0.0.0:7007")) {
+//     events.emit("ceramic", true);
+//     spinner.succeed("ceramic node started");
+//   }
+// })
 
-ceramic.stderr.on('data', (err) => {
-  console.log(err.toString())
-})
+// ceramic.stderr.on('data', (err) => {
+//   console.log(err.toString())
+// })
 
 const bootstrap = async () => {
   // TODO: convert to event driven to ensure functions run in correct orders after releasing the bytestream.
@@ -54,18 +54,18 @@ const next = async () => {
 
 const start = async () => {
   try {
-    spinner.start('[Ceramic] Starting Ceramic node\n')
-    events.on('ceramic', async (isRunning) => {
-      if (isRunning) {
+    // spinner.start('[Ceramic] Starting Ceramic node\n')
+    // events.on('ceramic', async (isRunning) => {
+      // if (isRunning) {
         await bootstrap()
         await graphiql()
         await next()
-      }
-      if(isRunning === false) {
-        ceramic.kill()
-        process.exit()
-      }
-    })
+      // }
+      // if(isRunning === false) {
+      //   ceramic.kill()
+      //   process.exit()
+      // }
+    // })
   } catch (err) {
     ceramic.kill()
     spinner.fail(err)
@@ -74,9 +74,9 @@ const start = async () => {
 
 start()
 
-process.on("SIGTERM", () => {
-  ceramic.kill();
-});
-process.on("beforeExit", () => {
-  ceramic.kill();
-});
+// process.on("SIGTERM", () => {
+//   ceramic.kill();
+// });
+// process.on("beforeExit", () => {
+//   ceramic.kill();
+// });
