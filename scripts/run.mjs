@@ -12,7 +12,7 @@ await spawn("npm", ["run", "generate"]);
 const ceramic = spawn("npm", ["run", "ceramic"]);
 ceramic.stdout.on("data", (buffer) => {
   console.log('[Ceramic]', buffer.toString())
-  if (buffer.toString().includes("0.0.0.0:7007")) {
+  if (buffer.toString().includes("IMPORTANT: Ceramic API running")) {
     events.emit("ceramic", true);
     spinner.succeed("ceramic node started");
   }
