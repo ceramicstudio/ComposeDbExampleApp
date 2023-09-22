@@ -7,6 +7,8 @@ import { writeComposite } from './composites.mjs';
 const events = new EventEmitter()
 const spinner = ora();
 
+await spawn("npm", ["run", "generate"]);
+
 const ceramic = spawn("npm", ["run", "ceramic"]);
 ceramic.stdout.on("data", (buffer) => {
   console.log('[Ceramic]', buffer.toString())
