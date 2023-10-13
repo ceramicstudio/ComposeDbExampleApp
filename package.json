@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "generate": "node scripts/commands.mjs",
     "dev": "node scripts/run.mjs",
     "nextDev": "next dev",
     "ceramic": "CERAMIC_ENABLE_EXPERIMENTAL_COMPOSE_DB='true' ceramic daemon --config ./composedb.config.json",
