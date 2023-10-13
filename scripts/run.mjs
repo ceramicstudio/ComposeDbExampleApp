@@ -7,6 +7,15 @@ import { writeComposite } from './composites.mjs';
 const events = new EventEmitter()
 const spinner = ora();
 
+const credentials = async () => {
+  spinner.info("[Ceramic] creating admin credentials");
+  const admin = spawn('npm', ['run', 'generate'])
+  spinner.succeed("Ceramic] admin credentials created");
+  admin.stdout.on('data', (buffer) => {
+    console.log('[Ceramic]', buffer.toString())
+  })
+}
+
 const ceramic = spawn("npm", ["run", "ceramic"]);
 ceramic.stdout.on("data", (buffer) => {
   console.log('[Ceramic]', buffer.toString())
@@ -54,6 +63,7 @@ const next = async () => {
 
 const start = async () => {
   try {
+    await credentials()
     spinner.start('[Ceramic] Starting Ceramic node\n')
     events.on('ceramic', async (isRunning) => {
       if (isRunning) {
