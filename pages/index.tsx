@@ -1,26 +1,26 @@
-import type { NextPage } from 'next'
-import { useEffect, useState } from 'react';
+import type { NextPage } from "next";
+import { useEffect, useState } from "react";
 
-import { useCeramicContext } from '../context';
-import { PostProps } from '../types';
+import { useCeramicContext } from "../context";
+import { PostProps } from "../types";
 
-import Head from 'next/head'
+import Head from "next/head";
 
-import Post from "../components/post.component"
-import styles from "../styles/Home.module.scss"
+import Post from "../components/post.component";
+import styles from "../styles/Home.module.scss";
 import AuthPrompt from "./did-select-popup";
 import React from "react";
-import {authenticateCeramic} from "../utils";
+import { authenticateCeramic } from "../utils";
 
-const Home: NextPage = () => {  
-  const clients = useCeramicContext()
-  const { ceramic, composeClient } = clients
-  const [ newPost, setNewPost ] = useState('')
-  const [ tag, setTag ] = useState('')
-  const [ posts, setPosts ] = useState<PostProps[] | []>([])
+const Home: NextPage = () => {
+  const clients = useCeramicContext();
+  const { ceramic, composeClient } = clients;
+  const [newPost, setNewPost] = useState("");
+  const [tag, setTag] = useState("");
+  const [posts, setPosts] = useState<PostProps[] | []>([]);
 
   const createPost = async () => {
-    if(ceramic.did !== undefined) {
+    if (ceramic.did !== undefined) {
       const profile = await composeClient.executeQuery(`
         query {
           viewer {
@@ -30,8 +30,8 @@ const Home: NextPage = () => {
             }
           }
         }
-      `)
-      if(profile && profile.data?.viewer.basicProfile?.name) {
+      `);
+      if (profile && profile.data?.viewer.basicProfile?.name) {
         const post = await composeClient.executeQuery(`
         mutation {
           createPosts(input: {
@@ -48,16 +48,16 @@ const Home: NextPage = () => {
             }
           }
         }
-      `)
-        getPosts()
-        setNewPost('')
-        setTag('')
-        alert("Created post.")
+      `);
+        getPosts();
+        setNewPost("");
+        setTag("");
+        alert("Created post.");
       } else {
         alert("Failed to fetch profile for authenticated user. Please register a profile.");
       }
     }
-  }
+  };
   const getPosts = async () => {
     const profile = await composeClient.executeQuery(`
         query {
@@ -72,7 +72,7 @@ const Home: NextPage = () => {
           }
         }
       `);
-    localStorage.setItem("viewer", profile?.data?.viewer?.id)
+    localStorage.setItem("viewer", profile?.data?.viewer?.id);
     const following = await composeClient.executeQuery(`
       query {
         node(id: "${profile?.data?.viewer?.id}") {
@@ -102,8 +102,8 @@ const Home: NextPage = () => {
           }
         }
       }
-    `)
-    console.log(following)
+    `);
+    console.log(following);
     const explore = await composeClient.executeQuery(`
       query {
         postsIndex(last:300) {
@@ -123,101 +123,104 @@ const Home: NextPage = () => {
           }
         }
       }
-    `)
+    `);
     // TODO: Sort based off of "created date"
-    const posts:PostProps[] = []
-    
-    if(following.data.node !== null) {
-      console.log(following)
-      following.data?.node?.followingList.edges.map(profile => {
-        if(profile.node !== null){
-        profile.node.profile.posts.edges.map(post => {
-          if(post.node !== null){
-          posts.push({
-            author: {
-              id: profile.node.profile.id,
-              name: profile.node.profile.name,
-              username: profile.node.profile.username,
-              emoji: profile.node.profile.emoji
-            },
-            post: {
-              id: post.node.id,
-              body: post.node.body,
-              tag: post.node.tag,
-              created: post.node.created
+    const posts: PostProps[] = [];
+
+    if (following.data.node !== null) {
+      console.log(following);
+      following.data?.node?.followingList.edges.map((profile) => {
+        if (profile.node !== null) {
+          profile.node.profile.posts.edges.map((post) => {
+            if (post.node !== null) {
+              posts.push({
+                author: {
+                  id: profile.node.profile.id,
+                  name: profile.node.profile.name,
+                  username: profile.node.profile.username,
+                  emoji: profile.node.profile.emoji,
+                },
+                post: {
+                  id: post.node.id,
+                  body: post.node.body,
+                  tag: post.node.tag,
+                  created: post.node.created,
+                },
+              });
             }
-          })
+          });
         }
-        })
-      }
-      })
-      console.log(explore)
+      });
+      console.log(explore);
     } else {
-      explore.data?.postsIndex?.edges.map(post => {
+      explore.data?.postsIndex?.edges.map((post) => {
         posts.push({
           author: {
             id: post.node.profile.id,
             name: post.node.profile.name,
             username: post.node.profile.username,
-            emoji: post.node.profile.emoji
+            emoji: post.node.profile.emoji,
           },
           post: {
             id: post.node.id,
             body: post.node.body,
             tag: post.node.tag,
-            created: post.node.created
-          }
-        })
-      }) 
+            created: post.node.created,
+          },
+        });
+      });
     }
-    posts.sort((a,b)=> (new Date(b.created) - new Date(a.created)))
-    console.log(posts)
-    setPosts((posts?.reverse())) // reverse to get most recent msgs
-  }
+    posts.sort((a, b) => new Date(b.created) - new Date(a.created));
+    console.log(posts);
+    setPosts(posts?.reverse()); // reverse to get most recent msgs
+  };
 
   useEffect(() => {
-    getPosts()
-  }, [])
+    getPosts();
+  }, []);
 
   return (
     <>
       <Head>
         <title>Ceramic Social</title>
-        {/* TODO: UPDATE FAVICON */}
-        <link rel="icon" href="/favicon.ico" />
+        <link rel='icon' href='/ceramic-favicon.svg' />
       </Head>
-      <div className = "content">
-        <div className = {styles.share}>
-          <textarea 
+      <div className='content'>
+        <div className={styles.share}>
+          <textarea
             value={newPost}
             maxLength={100}
-            placeholder="What are you thinking about?"
-            className = {styles.postInput}
+            placeholder='What are you thinking about?'
+            className={styles.postInput}
             onChange={(e) => {
-              setNewPost(e.target.value)
+              setNewPost(e.target.value);
             }}
           />
-          <textarea 
+          <textarea
             value={tag}
             maxLength={100}
-            placeholder="Enter a Category Tag"
-            className = {styles.postInput}
+            placeholder='Enter a Category Tag'
+            className={styles.postInput}
             onChange={(e) => {
-              setTag(e.target.value)
+              setTag(e.target.value);
             }}
           />
-          <button onClick = {() => {createPost()}}>
+          <button
+            onClick={() => {
+              createPost();
+            }}
+          >
             Share
           </button>
         </div>
-        <div className = {styles.postContainer}>
-            {(posts).map(post => (
-              <Post author = {post.author} post = {post.post} key = {post.post.id} tag = {post.post.tag}/>
-            ))}
+        <div className={styles.postContainer}>
+          {posts.map((post) => (
+            <Post author={post.author} post={post.post} key={post.post.id} tag={post.post.tag} />
+          ))}
         </div>
       </div>
     </>
   );
-}
+};
 
-export default Home
+export default Home;
