@@ -1,0 +1,19 @@
+---
+namespace: clay-testnet-manual
+
+resources:
+  - ./ceramic.yaml
+  - ./composedb.yaml
+
+images:
+  - name: ceramicnetwork/composedb:develop
+    newName: 3boxben/composedb-example-app@sha256
+    newTag: 32cbdbdb257880e2332eb5dfd55b1aa5f9a4fd1c552ae6e61e74372c546851c9
+
+configMapGenerator:
+  - name: ceramic-config-0
+    files:
+      - ./daemon-config.json
+  - name: ipfs-container-init-0
+    files:
+      - ./001-config.sh

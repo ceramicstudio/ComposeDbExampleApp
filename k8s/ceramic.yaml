@@ -1,0 +1,193 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ceramic-0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ceramic
+  serviceName: ceramic-0
+  template:
+    metadata:
+      annotations:
+        admission.datadoghq.com/js-lib.version: latest
+        prometheus/path: /metrics
+      labels:
+        admission.datadoghq.com/enabled: "true"
+        app: ceramic
+        managed-by: keramik
+        tags.datadoghq.com/env: clay-testnet-manual
+        tags.datadoghq.com/service: ceramic
+        tags.datadoghq.com/version: "0"
+    spec:
+      containers:
+        - command:
+            - /js-ceramic/packages/cli/bin/ceramic.js
+            - daemon
+            - --config
+            - /config/daemon-config.json
+          env:
+            - name: CERAMIC_NETWORK
+              value: testnet-clay
+            - name: CERAMIC_NETWORK_TOPIC
+            - name: ETH_RPC_URL
+            - name: CAS_API_URL
+              value: https://cas-clay.3boxlabs.com
+            - name: CERAMIC_SQLITE_PATH
+              value: /ceramic-data/ceramic.db
+            - name: CERAMIC_STATE_STORE_PATH
+              value: /ceramic-data/statestore
+            - name: CERAMIC_IPFS_HOST
+              value: http://localhost:5001
+            - name: CERAMIC_CORS_ALLOWED_ORIGINS
+              value: .*
+            - name: CERAMIC_LOG_LEVEL
+              value: "2"
+            - name: DD_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: DD_RUNTIME_METRICS_ENABLED
+              value: "true"
+            - name: DD_PROFILING_ENABLED
+              value: "true"
+          image: ceramicnetwork/js-ceramic:latest
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api/v0/node/healthcheck
+              port: api
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 30
+          name: ceramic
+          ports:
+            - containerPort: 7007
+              name: api
+              protocol: TCP
+            - containerPort: 9464
+              name: metrics
+              protocol: TCP
+          readinessProbe:
+            failureThreshold: 3
+            httpGet:
+              path: /api/v0/node/healthcheck
+              port: api
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 30
+          resources:
+            limits:
+              cpu: 250m
+              ephemeral-storage: 3Gi
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              ephemeral-storage: 3Gi
+              memory: 1Gi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /config
+              name: config-volume
+            - mountPath: /ceramic-data
+              name: ceramic-data
+        - image: ceramicnetwork/go-ipfs-daemon:latest
+          imagePullPolicy: Always
+          name: ipfs
+          ports:
+            - containerPort: 4001
+              name: swarm-tcp
+              protocol: TCP
+            - containerPort: 5001
+              name: rpc
+              protocol: TCP
+            - containerPort: 9465
+              name: metrics
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 250m
+              ephemeral-storage: 1Gi
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              ephemeral-storage: 1Gi
+              memory: 512Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /data/ipfs
+              name: ipfs-data
+            - mountPath: /container-init.d/001-config.sh
+              name: ipfs-container-init-0
+              subPath: 001-config.sh
+      volumes:
+        - name: config-volume
+          configMap:
+            defaultMode: 420
+            name: ceramic-config-0
+        - name: ceramic-data
+          persistentVolumeClaim:
+            claimName: ceramic-data
+        - name: ipfs-data
+          persistentVolumeClaim:
+            claimName: ipfs-data
+        - configMap:
+            defaultMode: 493
+            name: ipfs-container-init-0
+          name: ipfs-container-init-0
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ceramic-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        volumeMode: Filesystem
+      status:
+        phase: Pending
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: ipfs-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        volumeMode: Filesystem
+---
+kind: Service
+apiVersion: v1
+metadata:
+  annotations:
+    cloud.google.com/neg: '{"ingress":false}'
+    kubernetes.io/ingress.class: gce
+  name: ceramic
+spec:
+  ports:
+    - name: api
+      port: 7007
+      protocol: TCP
+      targetPort: 7007
+    - name: metrics
+      port: 9464
+      protocol: TCP
+      targetPort: 9464
+  selector:
+    app: ceramic
+  type: NodePort
+---
