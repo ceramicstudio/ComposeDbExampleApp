@@ -12,7 +12,8 @@ import { Ed25519Provider } from "key-did-provider-ed25519";
 import { getResolver } from "key-did-resolver";
 import { fromString } from "uint8arrays/from-string";
 
-const ceramic = new CeramicClient("http://localhost:7007");
+const ceramicUrl = process.env.CERAMIC_API_URL || "http://localhost:7007";
+const ceramic = new CeramicClient(ceramicUrl);
 
 /**
  * @param {Ora} spinner - to provide progress status.
@@ -113,7 +114,11 @@ export const writeComposite = async (spinner) => {
  * @return {Promise<void>} - return void when DID is authenticated.
  */
 const authenticate = async () => {
-  const seed = readFileSync("./admin_seed.txt");
+  const seed = process.env.CERAMIC_ADMIN_SEED;
+  if (!seed) {
+    console.error('Error: CERAMIC_ADMIN_SEED environment variable is not set.');
+    process.exit(1);
+  }
   const key = fromString(seed, "base16");
   const did = new DID({
     resolver: getResolver(),
