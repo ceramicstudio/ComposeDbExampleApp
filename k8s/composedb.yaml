@@ -17,18 +17,29 @@ spec:
         - name: composedb
           image: ceramicnetwork/composedb:develop
           command:
-            - /bin/bash
-            - -c
-            - "sleep infinity"
+            - node
+            - scripts/run.mjs
           ports:
-            - containerPort: 7007
+            - name: graphql
+              containerPort: 4000
+            - name: ui
+              containerPort: 3000
           env:
             - name: CAS_API_URL
-              value: "https://cas-clay.3boxlabs.com"
+              valueFrom:
+                configMapKeyRef:
+                  name: ceramic-env
+                  key: CAS_API_URL
             - name: CERAMIC_ADMIN_SEED
-              value: c3160737834462291667e3b57a7a413f39440e503db5cb2d5c6943e700cf090e
+              valueFrom:
+                secretKeyRef:
+                  name: ceramic-admin
+                  key: private-key
             - name: CERAMIC_API_URL
-              value: http://ceramic:7007
+              valueFrom:
+                configMapKeyRef:
+                  name: ceramic-env
+                  key: CERAMIC_API_URL
           resources:
             limits:
               cpu: 1000m

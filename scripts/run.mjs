@@ -74,14 +74,18 @@ const start = async () => {
 }
 
 function waitForever() {
-  return new Promise(() => {}); // Promise that never resolves
+  return new Promise((resolve) => {
+    process.on('SIGINT', () => {
+      resolve(); // Resolve the promise on termination signal (Ctrl+C)
+    });
+  });
 }
 
 start()
 
-// process.on("SIGTERM", () => {
-//   ceramic.kill();
-// });
-// process.on("beforeExit", () => {
-//   ceramic.kill();
-// });
+process.on("SIGTERM", () => {
+  console.log('SIGTERM received, exiting')
+});
+process.on("beforeExit", () => {
+  console.log('beforeExit received, exiting')
+});
