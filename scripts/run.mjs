@@ -66,14 +66,14 @@ const start = async () => {
         await bootstrap()
         await graphiql()
         await next()
-        await waitForever()
   } catch (err) {
-    //ceramic.kill()
+    console.log(err.message)
     spinner.fail(err)
   }
 }
 
 function waitForever() {
+  console.log('waiting forever')
   return new Promise((resolve) => {
     process.on('SIGINT', () => {
       resolve(); // Resolve the promise on termination signal (Ctrl+C)
@@ -82,6 +82,7 @@ function waitForever() {
 }
 
 start()
+await waitForever()
 
 process.on("SIGTERM", () => {
   console.log('SIGTERM received, exiting')

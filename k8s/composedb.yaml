@@ -17,8 +17,11 @@ spec:
         - name: composedb
           image: ceramicnetwork/composedb:develop
           command:
-            - node
-            - scripts/run.mjs
+            # - node
+            # - scripts/run.mjs
+            - /bin/bash
+            - -c
+            - "sleep infinity"
           ports:
             - name: graphql
               containerPort: 4000
