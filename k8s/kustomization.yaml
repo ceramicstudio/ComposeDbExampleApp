@@ -8,7 +8,7 @@ resources:
 images:
   - name: ceramicnetwork/composedb:develop
     newName: 3boxben/composedb-example-app@sha256
-    newTag: e375c02e5ed52b5aaaeae126a1c95bf305ec1be49b64e8df8ac547dca15bb782
+    newTag: 3a25320b5c17c5678976d7804a4b3c92060fb8fba11203c6e1359a25dc2d3234
 
 configMapGenerator:
   - name: ceramic-config-0

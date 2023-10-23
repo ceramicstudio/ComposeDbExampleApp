@@ -13,15 +13,42 @@ spec:
       labels:
         app: composedb
     spec:
+      initContainers:
+        - name: bootstrap-composites
+          image: ceramicnetwork/composedb:develop
+          command:
+            - node
+            - scripts/bootstrap.mjs
+          env:
+            - name: CERAMIC_ADMIN_SEED
+              valueFrom:
+                secretKeyRef:
+                  name: ceramic-admin
+                  key: private-key
+            - name: CERAMIC_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ceramic-env
+                  key: CERAMIC_API_URL
+          volumeMounts:
+            - name: generated-composites
+              mountPath: /app/src/__generated__/
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+            requests:
+              cpu: 100m
+              memory: 256Mi
       containers:
         - name: composedb
           image: ceramicnetwork/composedb:develop
           command:
-            # - node
-            # - scripts/run.mjs
-            - /bin/bash
-            - -c
-            - "sleep infinity"
+             - node
+             - scripts/graphiql.mjs
+            #  - /bin/bash
+            #  - -c
+            #  - "sleep infinity"
           ports:
             - name: graphql
               containerPort: 4000
@@ -43,6 +70,9 @@ spec:
                 configMapKeyRef:
                   name: ceramic-env
                   key: CERAMIC_API_URL
+          volumeMounts:
+            - name: generated-composites
+              mountPath: /app/src/__generated__/
           resources:
             limits:
               cpu: 1000m
@@ -50,3 +80,6 @@ spec:
             requests:
               cpu: 100m
               memory: 256Mi
+      volumes:
+        - name: generated-composites
+          emptyDir: {}
