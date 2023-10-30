@@ -1,65 +1,42 @@
-import type { NextPage } from "next";
 import { useEffect, useState } from "react";
+import type { NextPage } from "next";
+import Link from "next/link";
 
 import { useCeramicContext } from "../context";
-import { PostProps } from "../types";
+
+import { CreatePostForm } from "../components/createPostForm.component";
+import { PostsFeed } from "../components/postsFeed.component";
 
 import Head from "next/head";
 
-import Post from "../components/post.component";
+import { PostProps } from "../types";
 import styles from "../styles/Home.module.scss";
 import AuthPrompt from "./did-select-popup";
 import React from "react";
 import { authenticateCeramic } from "../utils";
 
+type Profile = {
+  id?: any;
+  name?: string;
+  username?: string;
+  description?: string;
+  gender?: string;
+  emoji?: string;
+};
+
 const Home: NextPage = () => {
   const clients = useCeramicContext();
   const { ceramic, composeClient } = clients;
-  const [newPost, setNewPost] = useState("");
-  const [tag, setTag] = useState("");
+  const [profile, setProfile] = useState<Profile | undefined>();
+
+  const [isLoading, setIsLoading] = useState(true);
+
   const [posts, setPosts] = useState<PostProps[] | []>([]);
 
-  const createPost = async () => {
+  const getProfile = async () => {
+    console.log("ceramic.did: ", ceramic.did);
     if (ceramic.did !== undefined) {
       const profile = await composeClient.executeQuery(`
-        query {
-          viewer {
-            basicProfile {
-              id
-              name
-            }
-          }
-        }
-      `);
-      if (profile && profile.data?.viewer.basicProfile?.name) {
-        const post = await composeClient.executeQuery(`
-        mutation {
-          createPosts(input: {
-            content: {
-              body: """${newPost}"""
-              tag: """${tag}"""
-              created: "${new Date().toISOString()}"
-              profileId: "${profile.data.viewer.basicProfile.id}"
-            }
-          })
-          {
-            document {
-              body
-            }
-          }
-        }
-      `);
-        getPosts();
-        setNewPost("");
-        setTag("");
-        alert("Created post.");
-      } else {
-        alert("Failed to fetch profile for authenticated user. Please register a profile.");
-      }
-    }
-  };
-  const getPosts = async () => {
-    const profile = await composeClient.executeQuery(`
         query {
           viewer {
             id
@@ -67,12 +44,24 @@ const Home: NextPage = () => {
               id
               name
               username
-              emoji
             }
           }
         }
       `);
-    localStorage.setItem("viewer", profile?.data?.viewer?.id);
+      localStorage.setItem("viewer", profile?.data?.viewer?.id);
+
+      console.log("Profile in getProfile: ", profile?.data?.viewer?.basicProfile);
+      setProfile(profile?.data?.viewer?.basicProfile);
+      setIsLoading(false);
+    } else {
+      setProfile(undefined);
+      setIsLoading(false);
+    }
+  };
+
+  const getPosts = async () => {
+    console.log("basicProfile: ", profile?.data?.viewer?.basicProfile);
+
     const following = await composeClient.executeQuery(`
       query {
         node(id: "${profile?.data?.viewer?.id}") {
@@ -103,7 +92,8 @@ const Home: NextPage = () => {
         }
       }
     `);
-    console.log(following);
+    console.log("Following: ", following?.data?.node?.followingList?.edges);
+
     const explore = await composeClient.executeQuery(`
       query {
         postsIndex(last:300) {
@@ -124,11 +114,13 @@ const Home: NextPage = () => {
         }
       }
     `);
+    console.log("Explore: ", explore?.data?.postsIndex?.edges);
+
     // TODO: Sort based off of "created date"
     const posts: PostProps[] = [];
 
-    if (following.data.node !== null) {
-      console.log(following);
+    if (following?.data?.node !== null) {
+      console.log("Following: ", following);
       following.data?.node?.followingList.edges.map((profile) => {
         if (profile.node !== null) {
           profile.node.profile.posts.edges.map((post) => {
@@ -151,7 +143,7 @@ const Home: NextPage = () => {
           });
         }
       });
-      console.log(explore);
+      console.log("Explore: ", explore);
     } else {
       explore.data?.postsIndex?.edges.map((post) => {
         posts.push({
@@ -171,12 +163,21 @@ const Home: NextPage = () => {
       });
     }
     posts.sort((a, b) => new Date(b.created) - new Date(a.created));
-    console.log(posts);
-    setPosts(posts?.reverse()); // reverse to get most recent msgs
+    console.log("Posts: ", posts);
+    // setPosts(posts?.reverse()); // reverse to get most recent msgs
+    setIsLoading(false);
+    return posts.reverse();
+  };
+
+  const refreshPosts = async () => {
+    // Fetch new posts and update the state
+    const newPosts = await getPosts();
+    setPosts(newPosts);
   };
 
   useEffect(() => {
-    getPosts();
+    getProfile();
+    refreshPosts();
   }, []);
 
   return (
@@ -186,38 +187,22 @@ const Home: NextPage = () => {
         <link rel='icon' href='/ceramic-favicon.svg' />
       </Head>
       <div className='content'>
-        <div className={styles.share}>
-          <textarea
-            value={newPost}
-            maxLength={100}
-            placeholder='What are you thinking about?'
-            className={styles.postInput}
-            onChange={(e) => {
-              setNewPost(e.target.value);
-            }}
-          />
-          <textarea
-            value={tag}
-            maxLength={100}
-            placeholder='Enter a Category Tag'
-            className={styles.postInput}
-            onChange={(e) => {
-              setTag(e.target.value);
-            }}
-          />
-          <button
-            onClick={() => {
-              createPost();
-            }}
-          >
-            Share
-          </button>
-        </div>
-        <div className={styles.postContainer}>
-          {posts.map((post) => (
-            <Post author={post.author} post={post.post} key={post.post.id} tag={post.post.tag} />
-          ))}
-        </div>
+        {profile ? (
+          <>
+            <CreatePostForm refreshPosts={refreshPosts} />
+            <PostsFeed posts={posts} refreshPosts={refreshPosts} />
+          </>
+        ) : (
+          <>
+            <h2 className={styles.accentColor}>
+              Please{" "}
+              <Link href={`/profile`}>
+                <a style={{ color: "white" }}>create a profile</a>
+              </Link>{" "}
+              before posting.
+            </h2>
+          </>
+        )}
       </div>
     </>
   );

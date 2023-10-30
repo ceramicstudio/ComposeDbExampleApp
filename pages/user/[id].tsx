@@ -1,23 +1,23 @@
-import type { NextPage } from 'next'
-import { useRouter } from 'next/router'
-import { useEffect, useState } from 'react'
+import type { NextPage } from "next";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 
-import { useCeramicContext } from '../../context'
-import { Author, Posts } from '../../types'
+import { useCeramicContext } from "../../context";
+import { Author, Posts } from "../../types";
 
-import Head from 'next/head'
-import Post from '../../components/post.component'
-import styles from "../../styles/Home.module.scss"
-import userStyles from "../../styles/user.module.scss"
+import Head from "next/head";
+import Post from "../../components/post.component";
+import styles from "../../styles/postsFeed.module.scss";
+import userStyles from "../../styles/user.module.scss";
 
 const UserProfile: NextPage = () => {
-  const router = useRouter()
-  const { id } = router.query
+  const router = useRouter();
+  const { id } = router.query;
 
-  const clients = useCeramicContext()
-  const { ceramic, composeClient } = clients
-  const [ profile, setProfile ] = useState<Author | {}>({})
-  const [ posts, setPosts ] = useState<Posts[] | []>([])
+  const clients = useCeramicContext();
+  const { ceramic, composeClient } = clients;
+  const [profile, setProfile] = useState<Author | {}>({});
+  const [posts, setPosts] = useState<Posts[] | []>([]);
 
   const getData = async () => {
     const data = await composeClient.executeQuery(`
@@ -27,6 +27,7 @@ const UserProfile: NextPage = () => {
             id
             username
             name
+            description
             emoji
             posts (last:300) {
               edges {
@@ -40,17 +41,18 @@ const UserProfile: NextPage = () => {
           }
         }
       }
-    `)
-    console.log(data)
+    `);
+    console.log(data);
     setProfile({
       name: data.data.node.name,
       username: data.data.node.username,
+      description: data.data.node.description,
       id: data.data.node.id,
-      emoji: data.data.node.emoji
-    })
+      emoji: data.data.node.emoji,
+    });
 
-    setPosts(data.data.node.posts)
-  }
+    setPosts(data.data.node.posts);
+  };
 
   // TODO: Add check to see if viewer is already following this account to
   //       prevent dupes
@@ -68,65 +70,63 @@ const UserProfile: NextPage = () => {
           }
         }
       }
-    `)
-    console.log(follow)
-    alert(`Followed ${profile.name}.`)
-  }
+    `);
+    console.log(follow);
+    alert(`Followed ${profile.name}.`);
+  };
 
   useEffect(() => {
-    getData()
-  }, [])
+    getData();
+  }, []);
 
   return (
     <>
       <Head>
-        <title>{profile !== undefined ? `${profile?.username}'s Profile`: 'No profile'}</title>
+        <title>{profile !== undefined ? `${profile?.username}'s Profile` : "No profile"}</title>
       </Head>
-      { profile !== undefined 
-        ?
-          <div className = "content">
-            <div className={userStyles.details}>
-              <div className = {userStyles.user}>
-                <div className = {userStyles.emoji}>
-                  {profile.emoji}
+      {profile !== undefined ? (
+        <div className='content'>
+          <div className={userStyles.details}>
+            <div className={userStyles.user}>
+              <div className={userStyles.emoji}>{profile.emoji}</div>
+              <div>
+                <h2 className={userStyles.names} style={{ marginBottom: "5px" }}>
+                  {profile.name}
+                </h2>
+                &nbsp;&nbsp;
+                <div className={userStyles.names} style={{ color: "#eb4a27", marginBottom: "5px" }}>
+                  @{profile.username}
                 </div>
-                <div className = {userStyles.names}>
-                  <div>
-                    {profile.name}
-                  </div>
-                  <div>
-                    @{profile.username}
-                  </div>
-                </div>
+                <div>{profile.description}</div>
               </div>
-                <div className = {userStyles.follow}>
-                  <button onClick = {() => {follow()}}>Follow {`${profile.username}`}</button>
-                </div>
             </div>
-            {
-              posts?.edges !== undefined
-              ? 
-                <div className = {styles.postContainer}>
-                  {
-                    posts.edges
-                        .filter(post => post.node !== null)
-                        .map(post => (
-                    <Post
-                      author = {profile}
-                      post = {post.node}
-                      key = {post.node.id}
-                    />
-                  ))}
-                </div>
-              : 
-              <></>
-            }
+            <div className={userStyles.follow}>
+              <button
+                onClick={() => {
+                  follow();
+                }}
+              >
+                Follow {`${profile.username}`}
+              </button>
+            </div>
           </div>
-        :
-          <div className = "content"></div>
-      }
+          {posts?.edges !== undefined ? (
+            <div className={styles.postContainer}>
+              {posts.edges
+                .filter((post) => post.node !== null)
+                .map((post) => (
+                  <Post author={profile} post={post.node} key={post.node.id} />
+                ))}
+            </div>
+          ) : (
+            <></>
+          )}
+        </div>
+      ) : (
+        <div className='content'></div>
+      )}
     </>
-  )
-}
+  );
+};
 
-export default UserProfile
+export default UserProfile;

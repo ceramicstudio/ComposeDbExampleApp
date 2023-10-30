@@ -74,8 +74,9 @@ input {
   }
   .popup-content {
     border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0 0 10px rgba(127, 127, 127, 0.9);
+    padding: 30px;
+    background-color: $bgColor;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2), 0 6px 40px 0 rgba(255, 255, 255, 0.19);
     position: absolute;
     top: 50%;
     left: 50%;
