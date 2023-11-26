@@ -3,8 +3,11 @@ import { serveEncodedDefinition } from "@composedb/devtools-node";
 /**
  * Runs GraphiQL server to view & query composites.
  */
+
+const ceramicUrl = process.env.CERAMIC_API_URL || "http://localhost:7007";
+
 const server = await serveEncodedDefinition({
-  ceramicURL: "http://localhost:7007",
+  ceramicURL: ceramicUrl,
   graphiql: true,
   path: "./src/__generated__/definition.json",
   port: 5001,
