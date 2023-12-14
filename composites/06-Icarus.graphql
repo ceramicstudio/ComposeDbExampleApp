@@ -1,0 +1,17 @@
+type IcarusResource 
+    @createModel(accountRelation: LIST, description: "Resource used to create blocks of text")
+    @createIndex(fields: [{ path: ["url"]} ]) 
+    @createIndex(fields: [{ path: ["title"]} ]) {
+    author: String @string(minLength: 1, maxLength: 140)
+    cid: String @string(minLength: 1, maxLength: 140)
+    clientMutationId: String @string(minLength: 1, maxLength: 140)
+    createdAt: DateTime
+    description: String @string(minLength: 1, maxLength: 3000)
+    doi: String @string(minLength: 1, maxLength: 140)
+    isbn: String @string(minLength: 1, maxLength: 140)
+    mediaType: String @string(minLength: 1, maxLength: 140)
+    publishedAt: Date
+    title: String @string(minLength: 1, maxLength: 140)
+    url: String @string(minLength: 1, maxLength: 140)
+    updatedAt: DateTime
+}

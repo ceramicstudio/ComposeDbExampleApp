@@ -20,6 +20,7 @@ const ceramic = new CeramicClient("http://localhost:7007");
  */
 export const writeComposite = async (spinner) => {
   await authenticate();
+
   const profileComposite = await createComposite(
     ceramic,
     "./composites/00-basicProfile.graphql"
@@ -82,6 +83,11 @@ export const writeComposite = async (spinner) => {
     schema: commentsPostsSchema,
   });
 
+  const icarusComposite = await createComposite(
+    ceramic,
+    "./composites/06-Icarus.graphql"
+  );
+
   const composite = Composite.from([
     profileComposite,
     postsComposite,
@@ -89,6 +95,7 @@ export const writeComposite = async (spinner) => {
     postsProfileComposite,
     commentsComposite,
     commentsPostsComposite,
+    icarusComposite
   ]);
 
   await writeEncodedComposite(composite, "./src/__generated__/definition.json");
