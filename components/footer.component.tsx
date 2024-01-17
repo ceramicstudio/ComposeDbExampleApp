@@ -4,17 +4,17 @@ export const Footer = () => {
   return (
     <footer className='footer'>
       <div>
-        <a href='https://developers.ceramic.network' target='_blank' rel='noreferrer'>
+        <Link href='https://developers.ceramic.network' target='_blank' rel='noreferrer'>
           Learn about Ceramic
-        </a>
+        </Link>
       </div>
       <div>
-        <a href='https://forum.ceramic.network' target='_blank' rel='noreferrer'>
+        <Link href='https://forum.ceramic.network' target='_blank' rel='noreferrer'>
           Ask Questions
-        </a>
+        </Link>
       </div>
       <div>
-        <a
+        <Link
           href='/'
           onClick={() => {
             localStorage.removeItem("logged_in");
@@ -22,7 +22,7 @@ export const Footer = () => {
           }}
         >
           Logout
-        </a>
+        </Link>
       </div>
     </footer>
   );

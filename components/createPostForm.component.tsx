@@ -8,7 +8,8 @@ interface CreatePostFormProps {
   refreshPosts: () => Promise<void>;
 }
 
-export const CreatePostForm = ({ refreshPosts }) => {
+export const CreatePostForm = ({ refreshPosts }: { refreshPosts: any }) => {
+
   const clients = useCeramicContext();
   const { ceramic, composeClient } = clients;
 
@@ -17,7 +18,7 @@ export const CreatePostForm = ({ refreshPosts }) => {
   const [tag, setTag] = useState("");
 
   const createPost = async () => {
-    if (ceramic.did !== undefined && profile && profile.name) {
+    if (ceramic.did !== undefined && profile) {
       const post = await composeClient.executeQuery(`
           mutation {
             createPosts(input: {
