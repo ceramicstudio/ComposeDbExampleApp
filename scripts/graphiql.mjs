@@ -10,7 +10,7 @@ const server = await serveEncodedDefinition({
   port: 5001,
 });
 
-console.log(`Server started on ${server.url}`);
+console.log(`Server started on http://localhost:${server.port}/graphql`);
 
 process.on("SIGTERM", () => {
   server.close(() => {
