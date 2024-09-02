@@ -21,7 +21,7 @@
     "@composedb/client": "0.6.0",
     "@composedb/devtools": "0.6.1",
     "@composedb/devtools-node": "0.6.1",
-    "@ceramicnetwork/blockchain-utils-linking": "6.2.0",
+    "@ceramicnetwork/blockchain-utils-linking": "5.6.0",
     "@didtools/cacao": "2.1.0",
     "@didtools/pkh-ethereum": "0.4.1",
     "chalk": "^5.1.2",
