@@ -29,7 +29,9 @@ export const RunCommands = async () => {
         "admin-dids": [adminDid.id],
       },
       ipfs: {
-        mode: "bundled",
+        "mode": "remote",
+        "host": "http://localhost:5101",
+        "disable-peer-data-sync": false
       },
       logger: {
         "log-level": 2,
